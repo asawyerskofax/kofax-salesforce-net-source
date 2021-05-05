@@ -31,24 +31,26 @@ namespace Debugger
             string instanceUrl = loginResponse[1];
 
             Console.WriteLine("Query Salesforce Accounts");
-            //var queryResult = client.Query(instanceUrl, authToken, "SELECT Name,Id FROM Account WHERE Name='Liz Inc.'");
 
             var queryAcctResult = client.Query(instanceUrl, authToken, $"SELECT Name,Id FROM Account WHERE Name='{acctName}'");
             Console.WriteLine(queryAcctResult);
 
-            var queryPricebookResult = client.Query(instanceUrl, authToken, $"SELECT Name,Id FROM Pricebook2 WHERE Name='{pricebookName}'");
-            Console.WriteLine(queryPricebookResult);
+            var accountId = client.ExtractId(queryAcctResult);
+            Console.WriteLine(accountId);
 
-            var queryPricebookEntryResult = client.Query(instanceUrl, authToken, $"SELECT Name,Id FROM PricebookEntry WHERE Name='{pricebookEntry}'");
-            Console.WriteLine(queryPricebookEntryResult);
+            //var queryPricebookResult = client.Query(instanceUrl, authToken, $"SELECT Name,Id FROM Pricebook2 WHERE Name='{pricebookName}'");
+            //Console.WriteLine(queryPricebookResult);
+
+            //var queryPricebookEntryResult = client.Query(instanceUrl, authToken, $"SELECT Name,Id FROM PricebookEntry WHERE Name='{pricebookEntry}'");
+            //Console.WriteLine(queryPricebookEntryResult);
 
             //pull the ids out of each query, too lazy to do it here (also unecessary since KTA will do it)
             var acctId = "00102000008UmtiAAC";
             var pricebookId = "01s02000000DahoAAC";
             var pricebookEntryId = "01u020000017GBOAA2";
 
-            var addOrderResult = client.AddOrder(instanceUrl, authToken, "1", "10", "2021-04-30", "San Diego", acctId, pricebookId, pricebookEntryId);
-            Console.WriteLine(addOrderResult);
+            //var addOrderResult = client.AddOrder(instanceUrl, authToken, "1", "10", "2021-04-30", "San Diego", acctId, pricebookId, pricebookEntryId);
+            //Console.WriteLine(addOrderResult);
 
             Console.ReadLine();            
         }

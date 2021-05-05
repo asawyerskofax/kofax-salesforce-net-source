@@ -175,8 +175,15 @@ namespace SalesforceApiLib
             //var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
             return jsonResponse;
         }
+
+        public string ExtractId(string jsonResponse)
+        {
+            QueryResponse response = JsonConvert.DeserializeObject<QueryResponse>(jsonResponse);
+            return response.records[0].Id;
+        }
     }
 
+    //creating classes for the payload
     public class OrderArray
     {
         public List<Order> order { get; set; }
@@ -224,6 +231,20 @@ namespace SalesforceApiLib
         public string UnitPrice { get; set; }
     }
 
+    //creating class for query responses
+    public class QueryResponse
+    {
+        public int totalSize { get; set; }
+        public bool done { get; set; }
+        public List<ReturnRecords> records { get; set; }
+    }
+
+    public class ReturnRecords
+    {
+        public string Name { get; set; }
+        public string Id { get; set; }
+    }
+
     //public string Describe(string instanceUrl, string apiEndpoint, string authToken, string sObject)
     //{
     //    using (var client = new HttpClient())
@@ -252,49 +273,3 @@ namespace SalesforceApiLib
     //    }
     //}
 }
-
-//var orderArray = new[] {
-//    new {
-//        attributes = new { type = "Order"},
-//        EffectiveDate = "2021-04-07",
-//        Status = "Draft",
-//        billingCity = "San Diego",
-//        accountId = accountId,
-//        Pricebook2Id = pricebookId,
-//        OrderItems = new {
-//            records = new[] {
-//                new {
-//                    attributes = new { type = "OrderItem" },
-//                    PricebookEntryId = pricebookEntryId,
-//                    quantity = 1,
-//                    UnitPrice = 10
-//                }
-//            }
-//        }
-//    }
-//};
-//string orderStr = JsonConvert.SerializeObject(orderArray, Formatting.Indented);
-
-//dynamic order = new dynamic[1];
-//order[0] = new ExpandoObject();
-//order[0].attributes = new ExpandoObject();
-//order[0].attributes.type = "Order";
-//order[0].EffectiveDate = "2021-04-08";
-//order[0].Status = "Draft";
-//order[0].billingCity = "San Diego";
-////order[0].accountId = "00102000008UmtiAAC";
-//order[0].accountId = accountId;
-
-////order[0].Pricebook2Id = "01s02000000Daho";
-//order[0].Pricebook2Id = pricebookId;
-
-//order[0].OrderItems = new ExpandoObject();
-//order[0].OrderItems.records = new dynamic[1];
-//order[0].OrderItems.records[0] = new ExpandoObject();
-//order[0].OrderItems.records[0].attributes.type = "OrderItem";
-
-////order[0].OrderItems.records[0].PricebookEntryId = "01u020000017GBO";
-//order[0].OrderItems.records[0].PricebookEntryId = pricebookEntryId;
-//order[0].OrderItems.records[0].quantity = "1";
-//order[0].OrderItems.records[0].UnitPrice = 10.00;
-//string json = JsonConvert.SerializeObject(order, Formatting.Indented);
