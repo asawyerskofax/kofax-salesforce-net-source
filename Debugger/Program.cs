@@ -52,6 +52,12 @@ namespace Debugger
             //var addOrderResult = client.AddOrder(instanceUrl, authToken, "1", "10", "2021-04-30", "San Diego", acctId, pricebookId, pricebookEntryId);
             //Console.WriteLine(addOrderResult);
 
+            String filePath = "C:/Users/adam.sawyers/OneDrive - Kofax, Inc/Documents/Sample Images/Order 1.tif";
+            String recordId = "80102000000614v"; //can be an order, account, anything that accepts attachments
+            String fileName = "Test TIF File.tif";
+            var attachFileResult = client.AttachFile(instanceUrl, authToken, filePath, recordId, fileName);
+            Console.WriteLine(attachFileResult);
+
             Console.ReadLine();            
         }
     }

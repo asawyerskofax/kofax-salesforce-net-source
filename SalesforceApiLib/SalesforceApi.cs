@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -180,6 +181,35 @@ namespace SalesforceApiLib
         {
             QueryResponse response = JsonConvert.DeserializeObject<QueryResponse>(jsonResponse);
             return response.records[0].Id;
+        }
+
+        public string AttachFile (string instanceUrl, string authToken, string filePath, string recordId, string fileName)
+        {
+            //String filePath = "C:\\Users\adam.sawyers\\OneDrive - Kofax, Inc\\Documents\\Sample Images\\Order 1.pdf";
+            String pdf = Convert.ToBase64String(File.ReadAllBytes(filePath /*Path to your pdf file*/));
+            //String accountId = "0011N00001EWqShQAL";
+            //String name = "testAttachment.pdf";
+
+            StringBuilder jsonData = new StringBuilder("{");
+            jsonData.Append("\"Name\" : \"" + fileName + "\",");
+            jsonData.Append("\"Body\" : \"" + pdf + "\",");
+            jsonData.Append("\"parentId\" : \"" + recordId + "\"");
+            jsonData.Append("}");
+
+            HttpContent addAttachmentBody = new StringContent(jsonData.ToString(), Encoding.UTF8, "application/json");
+
+            HttpClient apiCallClient = new HttpClient();
+            String restCallUrl = instanceUrl + API_ENDPOINT + "sobjects/attachment/";
+
+            HttpRequestMessage apiRequest = new HttpRequestMessage(HttpMethod.Post, restCallUrl);
+            apiRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            apiRequest.Headers.Add("Authorization", "Bearer " + authToken /*Your OAuth token*/);
+            apiRequest.Content = addAttachmentBody;
+
+            HttpResponseMessage apiCallResponse = apiCallClient.SendAsync(apiRequest).Result;
+
+            String requestResponse = apiCallResponse.Content.ReadAsStringAsync().Result;
+            return requestResponse;
         }
     }
 
