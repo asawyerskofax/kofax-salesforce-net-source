@@ -7,6 +7,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 
+using TotalAgility.Sdk;
+//using Agility.Sdk.Model.Capture;
+
 namespace SalesforceApiLib
 {
     public class SalesforceApi
@@ -69,8 +72,11 @@ namespace SalesforceApiLib
             }
         }
 
-        public string AddOrder(string instanceUrl, string authToken, string quantity, string unitPrice, string effectiveDate, string billingCity, string accountId, string pricebookId, string pricebookEntryId)
+        public string AddOrder(string instanceUrl, string authToken, string quantity, string unitPrice, DateTime effectiveDate, string billingCity, string accountId, string pricebookId, string pricebookEntryId)
         {
+            //convert date object to formatted string
+            String effectiveDateString = effectiveDate.ToString("yyyy-MM-dd");
+
             //create attributes object for the order
             var requestBodyOrderAttributes = new Attributes
             {
@@ -128,7 +134,7 @@ namespace SalesforceApiLib
             {
                 new Order {
                 attributes = requestBodyOrderAttributes,
-                EffectiveDate = effectiveDate,
+                EffectiveDate = effectiveDateString,
                 Status = "Draft",
                 billingCity = billingCity,
                 accountId = accountId,
@@ -179,20 +185,38 @@ namespace SalesforceApiLib
 
         public string ExtractId(string jsonResponse)
         {
-            QueryResponse response = JsonConvert.DeserializeObject<QueryResponse>(jsonResponse);
+            FlatQueryResponse response = JsonConvert.DeserializeObject<FlatQueryResponse>(jsonResponse);
             return response.records[0].Id;
         }
 
-        public string AttachFile (string instanceUrl, string authToken, string filePath, string recordId, string fileName)
+        public string[] ExtractPricebookIds(string jsonResponse)
         {
+            PricebookQueryResponse response = JsonConvert.DeserializeObject<PricebookQueryResponse>(jsonResponse);
+            //string[] loginInfoArr = { values["access_token"], values["instance_url"] };
+            string[] pricebookIdArr = { response.records[0].Id, response.records[0].Pricebook2.Id };
+            return pricebookIdArr;
+        }
+
+        public string AttachFile (string instanceUrl, string authToken, string sessionId, string docId, string docFileType, string recordId, string docName)
+        {
+            CaptureDocumentService cds = new CaptureDocumentService();
+            //need to get session id, doc id, file type
+            //might need to parse mime type
+            string[] docFileTypeArr = docFileType.Split('/');
+            string docFileTypeFormatted = docFileTypeArr[1];
+            Stream docStream = cds.GetDocumentFile(sessionId, null, docId, docFileTypeFormatted);
+            byte[] docStreamBytes = new byte[docStream.Length];
+            docStream.Read(docStreamBytes, 0, docStreamBytes.Length);
+            String docBase64 = Convert.ToBase64String(docStreamBytes);
+
             //String filePath = "C:\\Users\adam.sawyers\\OneDrive - Kofax, Inc\\Documents\\Sample Images\\Order 1.pdf";
-            String pdf = Convert.ToBase64String(File.ReadAllBytes(filePath /*Path to your pdf file*/));
+            //String pdf = Convert.ToBase64String(File.ReadAllBytes(filePath /*Path to your pdf file*/));
             //String accountId = "0011N00001EWqShQAL";
             //String name = "testAttachment.pdf";
 
             StringBuilder jsonData = new StringBuilder("{");
-            jsonData.Append("\"Name\" : \"" + fileName + "\",");
-            jsonData.Append("\"Body\" : \"" + pdf + "\",");
+            jsonData.Append("\"Name\" : \"" + docName + "\",");
+            jsonData.Append("\"Body\" : \"" + docBase64 + "\",");
             jsonData.Append("\"parentId\" : \"" + recordId + "\"");
             jsonData.Append("}");
 
@@ -261,15 +285,40 @@ namespace SalesforceApiLib
         public string UnitPrice { get; set; }
     }
 
-    //creating class for query responses
-    public class QueryResponse
+    //creating class for flat query responses
+    public class FlatQueryResponse
     {
         public int totalSize { get; set; }
         public bool done { get; set; }
         public List<ReturnRecords> records { get; set; }
     }
 
+    //creating class for complex query responses (pricebooks)
+    public class PricebookQueryResponse
+    {
+        public int totalSize { get; set; }
+        public bool done { get; set; }
+        public List<ReturnRecordsWithPricebook> records { get; set; }
+    }
+
+    //used only for flat responses
     public class ReturnRecords
+    {
+        public string Name { get; set; }
+        public string Id { get; set; }
+    }
+
+
+    //used for response with pricebook info
+    public class ReturnRecordsWithPricebook
+    {
+        public string Name { get; set; }
+        public string Id { get; set; }
+        public Pricebook2Record Pricebook2 { get; set; }
+    }
+
+    //class for pricebook2 info
+    public class Pricebook2Record
     {
         public string Name { get; set; }
         public string Id { get; set; }

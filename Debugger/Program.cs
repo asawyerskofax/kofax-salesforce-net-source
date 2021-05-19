@@ -14,8 +14,12 @@ namespace Debugger
             string token = "";
 
             string acctName = "Adams Adventures";
-            string pricebookName = "Adams Test Pricebook";
+            //string pricebookName = "Adams Test Pricebook";
             string pricebookEntry = "Adams Test Product";
+
+            DateTime today = DateTime.Now;
+            String todayString = today.ToString("yyyy-MM-dd");
+            Console.WriteLine(todayString);
 
             var client = new SalesforceApi();
 
@@ -38,25 +42,29 @@ namespace Debugger
             var accountId = client.ExtractId(queryAcctResult);
             Console.WriteLine(accountId);
 
+            //no longer needed
             //var queryPricebookResult = client.Query(instanceUrl, authToken, $"SELECT Name,Id FROM Pricebook2 WHERE Name='{pricebookName}'");
             //Console.WriteLine(queryPricebookResult);
 
-            //var queryPricebookEntryResult = client.Query(instanceUrl, authToken, $"SELECT Name,Id FROM PricebookEntry WHERE Name='{pricebookEntry}'");
-            //Console.WriteLine(queryPricebookEntryResult);
+            var queryPricebookEntryResult = client.Query(instanceUrl, authToken, $"SELECT Name,Id,Pricebook2.Name,Pricebook2.Id FROM PricebookEntry WHERE Name='{pricebookEntry}'");
+            Console.WriteLine(queryPricebookEntryResult);
 
             //pull the ids out of each query, too lazy to do it here (also unecessary since KTA will do it)
             var acctId = "00102000008UmtiAAC";
-            var pricebookId = "01s02000000DahoAAC";
-            var pricebookEntryId = "01u020000017GBOAA2";
+            var pricebookId = "01s1N000007VuGbQAK";
+            var pricebookEntryId = "01u020000017GBJAA2";
 
-            //var addOrderResult = client.AddOrder(instanceUrl, authToken, "1", "10", "2021-04-30", "San Diego", acctId, pricebookId, pricebookEntryId);
-            //Console.WriteLine(addOrderResult);
+            var addOrderResult = client.AddOrder(instanceUrl, authToken, "1", "5", DateTime.Now, "San Diego", acctId, pricebookId, pricebookEntryId);
+            Console.WriteLine(addOrderResult);
+
+            var newRecordId = client.ExtractId(addOrderResult);
+            Console.WriteLine(newRecordId);
 
             String filePath = "C:/Users/adam.sawyers/OneDrive - Kofax, Inc/Documents/Sample Images/Order 1.tif";
             String recordId = "80102000000614v"; //can be an order, account, anything that accepts attachments
             String fileName = "Test TIF File.tif";
-            var attachFileResult = client.AttachFile(instanceUrl, authToken, filePath, recordId, fileName);
-            Console.WriteLine(attachFileResult);
+            //var attachFileResult = client.AttachFile(instanceUrl, authToken, filePath, recordId, fileName);
+            //WriteLine(attachFileResult);
 
             Console.ReadLine();            
         }
