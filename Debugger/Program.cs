@@ -7,11 +7,11 @@ namespace Debugger
     {
         static void Main(string[] args)
         {
-            string client_id = "3MVG9Eroh42Z9.iVnYylfw221tNItLyCkYT9V5SqGISPVMy8cSl0FsYhj13Pieh1TiYPJB7m3L_GF9jLFN.jw";
-            string client_secret = "BE94011CC2E7144E9B7461E5EE56AF7DD25C8DADA8260CD7615193540B68CCB5";
-            string username = "adam.sawyers18@kofax.com.strategy";
+            string client_id = "3MVG9Nk1FpUrSQHd6HOW6WiNA_KSUd3SQXlx_qV_2c7mKygbdtMyegIUohc_OdBsWy6O3DTIVQoK9M49h9Ah9";
+            string client_secret = "C38C29A240EC5826B2C8EBFE2131F9DF54C01FD83D5C58C761CAD46330C2805C";
+            string username = "adam.sawyers@resilient-wolf-b9s6tc.com";
             string password = "Hippomilk-00";
-            string token = "";
+            string token = "Zk5c9wVErrUuWIfZ3qtubu56";
 
             string acctName = "Adams Adventures";
             //string pricebookName = "Adams Test Pricebook";
@@ -24,7 +24,7 @@ namespace Debugger
             var client = new SalesforceApi();
 
             Console.WriteLine("Logging in");
-            var loginResponse = client.Login(client_id, client_secret, username, password, token, false);
+            var loginResponse = client.Login(client_id, client_secret, username, password, token, true);
 
             Console.WriteLine("Write client object AuthToken prop");
             Console.WriteLine(loginResponse[0]);
@@ -54,17 +54,24 @@ namespace Debugger
             var pricebookId = "01s1N000007VuGbQAK";
             var pricebookEntryId = "01u020000017GBJAA2";
 
-            var addOrderResult = client.AddOrder(instanceUrl, authToken, "1", "5", DateTime.Now, "San Diego", acctId, pricebookId, pricebookEntryId);
-            Console.WriteLine(addOrderResult);
+            //var addOrderResult = client.AddOrder(instanceUrl, authToken, "1", "5", DateTime.Now, "San Diego", acctId, pricebookId, pricebookEntryId);
+            //Console.WriteLine(addOrderResult);
 
-            var newRecordId = client.ExtractId(addOrderResult);
-            Console.WriteLine(newRecordId);
+            //var newRecordId = client.ExtractId(addOrderResult);
+            //Console.WriteLine(newRecordId);
 
             String filePath = "C:/Users/adam.sawyers/OneDrive - Kofax, Inc/Documents/Sample Images/Order 1.tif";
-            String recordId = "80102000000614v"; //can be an order, account, anything that accepts attachments
+            String recordId = "8010200000064NM"; //can be an order, account, anything that accepts attachments
             String fileName = "Test TIF File.tif";
             //var attachFileResult = client.AttachFile(instanceUrl, authToken, filePath, recordId, fileName);
             //WriteLine(attachFileResult);
+
+            //add case
+            var addCaseResult = client.AddCase(instanceUrl, authToken, "High", "Its broken", "KTA is really broken", null, null, "Adam", "adam@adam.com", "555-555-5555", "Adams Adventures");
+            Console.WriteLine(addCaseResult);
+
+            var caseId = client.ExtractId(addCaseResult);
+            Console.WriteLine(caseId);
 
             Console.ReadLine();            
         }

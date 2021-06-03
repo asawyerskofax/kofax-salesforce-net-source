@@ -8,7 +8,6 @@ using System.Text;
 using Newtonsoft.Json;
 
 using TotalAgility.Sdk;
-//using Agility.Sdk.Model.Capture;
 
 namespace SalesforceApiLib
 {
@@ -89,15 +88,6 @@ namespace SalesforceApiLib
                 type = "OrderItem"
             };
 
-            //create order item record object
-            //var requestBodyOrderItemRecord = new OrderItemRecords
-            //{
-            //    Attributes = requestBodyOrderItemAttributes,
-            //    PricebookEntryId = pricebookEntryId,
-            //    Quantity = "1",
-            //    UnitPrice = "10"
-            //};
-
             //create records array of order items
             var requestBodyOrderRecord = new List<OrderItemRecords>
             {
@@ -114,20 +104,6 @@ namespace SalesforceApiLib
             {
                 records = requestBodyOrderRecord
             };
-
-            //create order
-            //var requestBodyOrder = new Order
-            //{
-            //    Attributes = requestBodyOrderAttributes,
-            //    EffectiveDate = "2021-04-07",
-            //    Status = "Draft",
-            //    BillingCity = "San Diego",
-            //    AccountId = accountId,
-            //    Pricebook2Id = pricebookId,
-            //    OrderItems = requestBodyOrderItems
-            //};
-
-            //create array of orders
 
             //create array of orders,
             var requestBodyOrderArray = new List<Order>
@@ -153,20 +129,6 @@ namespace SalesforceApiLib
             var requestBodyStr = JsonConvert.SerializeObject(requestBody);
             Console.WriteLine(requestBodyStr);
 
-            //String jsonResponse;
-            //using (var client = new HttpClient())
-            //{
-
-            //    var request = new FormUrlEncodedContent(new Dictionary<string, string>
-            //    {
-            //        { "order", requestBodyStr }
-            //    });
-            //    request.Headers.Add("Authorization", "Bearer " + authToken);
-            //    request.Headers.Add("X-PrettyPrint", "1");
-            //    var response = client.PostAsync(instanceUrl + API_ENDPOINT, request).Result;
-            //    jsonResponse = response.Content.ReadAsStringAsync().Result;
-            //}
-
             Console.WriteLine(instanceUrl + API_ENDPOINT + "commerce/sale/order");
 
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, instanceUrl + API_ENDPOINT + "commerce/sale/order");
@@ -179,7 +141,6 @@ namespace SalesforceApiLib
             var result = postClient.SendAsync(request).Result;
             var jsonResponse = result.Content.ReadAsStringAsync().Result;
 
-            //var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
             return jsonResponse;
         }
 
@@ -192,27 +153,19 @@ namespace SalesforceApiLib
         public string[] ExtractPricebookIds(string jsonResponse)
         {
             PricebookQueryResponse response = JsonConvert.DeserializeObject<PricebookQueryResponse>(jsonResponse);
-            //string[] loginInfoArr = { values["access_token"], values["instance_url"] };
             string[] pricebookIdArr = { response.records[0].Id, response.records[0].Pricebook2.Id };
             return pricebookIdArr;
         }
 
-        public string AttachFile (string instanceUrl, string authToken, string sessionId, string docId, string docFileType, string recordId, string docName)
+        public string AttachFile(string instanceUrl, string authToken, string sessionId, string docId, string docFileType, string recordId, string docName)
         {
             CaptureDocumentService cds = new CaptureDocumentService();
-            //need to get session id, doc id, file type
-            //might need to parse mime type
             string[] docFileTypeArr = docFileType.Split('/');
             string docFileTypeFormatted = docFileTypeArr[1];
             Stream docStream = cds.GetDocumentFile(sessionId, null, docId, docFileTypeFormatted);
             byte[] docStreamBytes = new byte[docStream.Length];
             docStream.Read(docStreamBytes, 0, docStreamBytes.Length);
             String docBase64 = Convert.ToBase64String(docStreamBytes);
-
-            //String filePath = "C:\\Users\adam.sawyers\\OneDrive - Kofax, Inc\\Documents\\Sample Images\\Order 1.pdf";
-            //String pdf = Convert.ToBase64String(File.ReadAllBytes(filePath /*Path to your pdf file*/));
-            //String accountId = "0011N00001EWqShQAL";
-            //String name = "testAttachment.pdf";
 
             StringBuilder jsonData = new StringBuilder("{");
             jsonData.Append("\"Name\" : \"" + docName + "\",");
@@ -235,120 +188,128 @@ namespace SalesforceApiLib
             String requestResponse = apiCallResponse.Content.ReadAsStringAsync().Result;
             return requestResponse;
         }
+
+        public string AddCase(string instanceUrl, string authToken, string priority, string subject, string description, string contactId, string accountId, string suppliedName, string suppliedEmail, string suppliedPhone, string suppliedCompany)
+        {
+            var requestBody = new Dictionary<string, string>
+                {
+                    {"Status", "New"},
+                    {"Origin", "Web"},
+                    {"Priority", priority},
+                    {"Subject", subject},
+                    {"Description", description},
+                    {"ContactId", contactId},
+                    {"AccountId", accountId},
+                    {"SuppliedName", suppliedName},
+                    {"SuppliedEmail", suppliedEmail},
+                    {"SuppliedPhone", suppliedPhone},
+                    {"SuppliedCompany", suppliedCompany},
+                    {"Comments", null},
+                    {"Type", null},
+                    {"Reason", null}
+                };
+
+            var requestBodyStr = JsonConvert.SerializeObject(requestBody);
+            Console.WriteLine(requestBodyStr);
+
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, instanceUrl + API_ENDPOINT + "sobjects/case");
+            request.Headers.Add("Authorization", "Bearer " + authToken);
+
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Content = new StringContent(requestBodyStr, Encoding.UTF8, "application/json");
+            HttpClient postClient = new HttpClient();
+
+            var result = postClient.SendAsync(request).Result;
+            var jsonResponse = result.Content.ReadAsStringAsync().Result;
+
+            return jsonResponse;
+        }
+
+        //creating classes for the payload
+        public class OrderArray
+        {
+            public List<Order> order { get; set; }
+        }
+
+        public class Order
+        {
+            public Attributes attributes { get; set; }
+            //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+
+            public string EffectiveDate { get; set; }
+            //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+
+            public string Status { get; set; }
+            //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+
+            public string billingCity { get; set; }
+            //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+
+            public string accountId { get; set; }
+            //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+
+            public string Pricebook2Id { get; set; }
+            //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+
+            public OrderItems OrderItems { get; set; }
+            //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        }
+
+        public class Attributes
+        {
+            public string type { get; set; }
+        }
+
+        public class OrderItems
+        {
+            public List<OrderItemRecords> records { get; set; }
+        }
+
+        public class OrderItemRecords
+        {
+            public Attributes attributes { get; set; }
+            public string PricebookEntryId { get; set; }
+            public string quantity { get; set; }
+            public string UnitPrice { get; set; }
+        }
+
+        //creating class for flat query responses
+        public class FlatQueryResponse
+        {
+            public int totalSize { get; set; }
+            public bool done { get; set; }
+            public List<ReturnRecords> records { get; set; }
+        }
+
+        //creating class for complex query responses (pricebooks)
+        public class PricebookQueryResponse
+        {
+            public int totalSize { get; set; }
+            public bool done { get; set; }
+            public List<ReturnRecordsWithPricebook> records { get; set; }
+        }
+
+        //used only for flat responses
+        public class ReturnRecords
+        {
+            public string Name { get; set; }
+            public string Id { get; set; }
+        }
+
+
+        //used for response with pricebook info
+        public class ReturnRecordsWithPricebook
+        {
+            public string Name { get; set; }
+            public string Id { get; set; }
+            public Pricebook2Record Pricebook2 { get; set; }
+        }
+
+        //class for pricebook2 info
+        public class Pricebook2Record
+        {
+            public string Name { get; set; }
+            public string Id { get; set; }
+        }
     }
-
-    //creating classes for the payload
-    public class OrderArray
-    {
-        public List<Order> order { get; set; }
-    }
-
-    public class Order
-    {
-        public Attributes attributes { get; set; }
-        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-
-        public string EffectiveDate { get; set; }
-        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-
-        public string Status { get; set; }
-        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-
-        public string billingCity { get; set; }
-        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-
-        public string accountId { get; set; }
-        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-
-        public string Pricebook2Id { get; set; }
-        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-
-        public OrderItems OrderItems { get; set; }
-        //[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    }
-
-    public class Attributes
-    {
-        public string type { get; set; }
-    }
-
-    public class OrderItems
-    {
-        public List<OrderItemRecords> records { get; set; }
-    }
-
-    public class OrderItemRecords
-    {
-        public Attributes attributes { get; set; }
-        public string PricebookEntryId { get; set; }
-        public string quantity { get; set; }
-        public string UnitPrice { get; set; }
-    }
-
-    //creating class for flat query responses
-    public class FlatQueryResponse
-    {
-        public int totalSize { get; set; }
-        public bool done { get; set; }
-        public List<ReturnRecords> records { get; set; }
-    }
-
-    //creating class for complex query responses (pricebooks)
-    public class PricebookQueryResponse
-    {
-        public int totalSize { get; set; }
-        public bool done { get; set; }
-        public List<ReturnRecordsWithPricebook> records { get; set; }
-    }
-
-    //used only for flat responses
-    public class ReturnRecords
-    {
-        public string Name { get; set; }
-        public string Id { get; set; }
-    }
-
-
-    //used for response with pricebook info
-    public class ReturnRecordsWithPricebook
-    {
-        public string Name { get; set; }
-        public string Id { get; set; }
-        public Pricebook2Record Pricebook2 { get; set; }
-    }
-
-    //class for pricebook2 info
-    public class Pricebook2Record
-    {
-        public string Name { get; set; }
-        public string Id { get; set; }
-    }
-
-    //public string Describe(string instanceUrl, string apiEndpoint, string authToken, string sObject)
-    //{
-    //    using (var client = new HttpClient())
-    //    {
-    //        string restQuery = instanceUrl + API_ENDPOINT + "sobjects/" + sObject;
-    //        var request = new HttpRequestMessage(HttpMethod.Get, restQuery);
-    //        request.Headers.Add("Authorization", "Bearer " + authToken);
-    //        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-    //        request.Headers.Add("X-PrettyPrint", "1");
-    //        var response = client.SendAsync(request).Result;
-    //        return response.Content.ReadAsStringAsync().Result;
-    //    }
-    //}
-
-    //public string QueryEndpoints(string instanceUrl, string apiEndpoint, string authToken)
-    //{
-    //    using (var client = new HttpClient())
-    //    {
-    //        string restQuery = instanceUrl + API_ENDPOINT;
-    //        var request = new HttpRequestMessage(HttpMethod.Get, restQuery);
-    //        request.Headers.Add("Authorization", "Bearer " + authToken);
-    //        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-    //        request.Headers.Add("X-PrettyPrint", "1");
-    //        var response = client.SendAsync(request).Result;
-    //        return response.Content.ReadAsStringAsync().Result;
-    //    }
-    //}
 }
